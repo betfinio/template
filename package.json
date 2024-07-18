@@ -7,6 +7,7 @@
     "check": "biome check --write",
     "dev": "rsbuild dev --open",
     "prod": "rsbuild dev --env-mode production --open",
+    "local": "rsbuild dev --env-mode localhost --open",
     "format": "biome format --write",
     "preview": "rsbuild preview"
   },
@@ -18,6 +19,7 @@
     "class-variance-authority": "^0.7.0",
     "framer-motion": "^11.3.2",
     "i18next": "^23.11.5",
+    "i18next-icu": "^2.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^14.1.2",
@@ -27,8 +29,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
-    "@rsbuild/core": "^1.0.1-beta.0",
-    "@rsbuild/plugin-react": "^1.0.1-beta.0",
+    "@rsbuild/core": "^1.0.1-beta.3",
+    "@rsbuild/plugin-react": "^1.0.1-beta.3",
     "@tanstack/router-plugin": "^1.44.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
