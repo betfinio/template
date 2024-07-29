@@ -6,6 +6,17 @@ import {TanStackRouterRspack} from '@tanstack/router-plugin/rspack'
 // @ts-ignore
 import {dependencies} from "./package.json";
 
+const getStaking = () => {
+	switch (process.env.PUBLIC_ENVIRONMENT) {
+		case 'development':
+			return 'betfinio_staking@https://betfin-staking-dev.web.app/mf-manifest.json'
+		case 'production':
+			return 'betfinio_staking@https://staking.betfin.io/mf-manifest.json'
+		default:
+			return 'betfinio_staking@http://localhost:3000/mf-manifest.json'
+	}
+}
+
 const getApp = () => {
 	switch (process.env.PUBLIC_ENVIRONMENT) {
 		case 'development':
@@ -19,10 +30,10 @@ const getApp = () => {
 
 export default defineConfig({
 	server: {
-		port: 8888,
+		port: 7777,
 	},
 	dev: {
-		assetPrefix: 'http://localhost:8888',
+		assetPrefix: 'http://localhost:7777',
 	},
 	html: {
 		title: 'BetFin Template',
@@ -40,7 +51,8 @@ export default defineConfig({
 				new ModuleFederationPlugin({
 					name: 'betfinio_template',
 					remotes: {
-						betfinio_app: getApp()
+						betfinio_app: getApp(),
+						betfinio_staking: getStaking()
 					},
 					shared: {
 						'react': {
