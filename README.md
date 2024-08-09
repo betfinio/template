@@ -34,9 +34,8 @@ To get testnet BET tokens, please send your address to the following telegram
 account: [@bf_monster](https://t.me/bf_monster)
 or write to email: [bf.monster@proton.me](mailto:bf.monster@proton.me)
 
-To get testnet MATIC tokens, please use the following faucet: [https://faucet.polygon.technology/](https://faucet.polygon.technology/)
-
-
+To get testnet MATIC tokens, please use the following
+faucet: [https://faucet.polygon.technology/](https://faucet.polygon.technology/)
 
 ## UI components and shared functions/utils/hooks
 

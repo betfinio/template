@@ -1,21 +1,9 @@
 import {defineConfig} from '@rsbuild/core';
 import {pluginReact} from '@rsbuild/plugin-react';
 import {ModuleFederationPlugin} from "@module-federation/enhanced/rspack";
-// @ts-ignore
 import {TanStackRouterRspack} from '@tanstack/router-plugin/rspack'
-// @ts-ignore
 import {dependencies} from "./package.json";
 
-const getStaking = () => {
-	switch (process.env.PUBLIC_ENVIRONMENT) {
-		case 'development':
-			return 'betfinio_staking@https://betfin-staking-dev.web.app/mf-manifest.json'
-		case 'production':
-			return 'betfinio_staking@https://staking.betfin.io/mf-manifest.json'
-		default:
-			return 'betfinio_staking@http://localhost:3000/mf-manifest.json'
-	}
-}
 
 const getApp = () => {
 	switch (process.env.PUBLIC_ENVIRONMENT) {
@@ -52,7 +40,6 @@ export default defineConfig({
 					name: 'betfinio_template',
 					remotes: {
 						betfinio_app: getApp(),
-						betfinio_staking: getStaking()
 					},
 					shared: {
 						'react': {
@@ -103,10 +90,6 @@ export default defineConfig({
 							singleton: true,
 							requiredVersion: dependencies['wagmi']
 						},
-						"@web3modal/wagmi": {
-							singleton: true,
-							requiredVersion: dependencies['@web3modal/wagmi']
-						}
 					},
 				}),
 			]);
