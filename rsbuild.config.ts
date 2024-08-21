@@ -7,41 +7,53 @@ import { dependencies } from './package.json';
 const getApp = () => {
 	switch (process.env.PUBLIC_ENVIRONMENT) {
 		case 'development':
-			return 'betfinio_app@https://betfin-app-dev.web.app/mf-manifest.json';
+			return 'betfinio_app@https://app.betfin.dev/mf-manifest.json';
 		case 'production':
-			return 'betfinio_app@https://betfin-app.web.app/mf-manifest.json';
+			return 'betfinio_app@https://app.betfin.io/mf-manifest.json';
+		case 'production-ua':
+			return 'betfinio_app@https://app.betfin.gg/mf-manifest.json';
 		default:
 			return 'betfinio_app@http://localhost:5555/mf-manifest.json';
 	}
 };
 
+function getOutput() {
+	switch (process.env.PUBLIC_ENVIRONMENT) {
+		case 'development':
+			return 'https://template.betfin.dev';
+		case 'production':
+			return 'https://template.betfin.io';
+		case 'production-ua':
+			return 'https://template.betfin.gg';
+		default:
+			return 'http://localhost:4000';
+	}
+}
+
 export default defineConfig({
 	server: {
-		port: 7777,
+		port: 4000,
 	},
 	dev: {
-		assetPrefix: 'http://localhost:7777',
+		assetPrefix: 'http://localhost:4000',
 	},
 	html: {
-		title: 'BetFin Template',
+		title: 'BetFin Games',
 		favicon: './src/assets/favicon.svg',
 	},
 	output: {
-		assetPrefix:
-			process.env.PUBLIC_ENVIRONMENT === 'production'
-				? 'https://betfin-template.web.app'
-				: 'https://betfin-template-dev.web.app',
+		assetPrefix: getOutput(),
 	},
 	plugins: [pluginReact()],
 	tools: {
 		rspack: {
 			output: {
-				uniqueName: 'betfinio_template',
+				uniqueName: 'betfinio_games',
 			},
 			plugins: [
 				TanStackRouterRspack(),
 				new ModuleFederationPlugin({
-					name: 'betfinio_template',
+					name: 'betfinio_games',
 					remotes: {
 						betfinio_app: getApp(),
 					},
@@ -62,17 +74,9 @@ export default defineConfig({
 							singleton: true,
 							requiredVersion: dependencies['@tanstack/react-query'],
 						},
-						'@tanstack/react-table': {
-							singleton: true,
-							requiredVersion: dependencies['@tanstack/react-table'],
-						},
 						'lucide-react': {
 							singleton: true,
 							requiredVersion: dependencies['lucide-react'],
-						},
-						'@supabase/supabase-js': {
-							singleton: true,
-							requiredVersion: dependencies['@supabase/supabase-js'],
 						},
 						i18next: {
 							singleton: true,
