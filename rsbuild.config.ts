@@ -38,7 +38,7 @@ export default defineConfig({
 		assetPrefix: 'http://localhost:4000',
 	},
 	html: {
-		title: 'BetFin Games',
+		title: 'BetFin Template',
 		favicon: './src/assets/favicon.svg',
 	},
 	output: {
