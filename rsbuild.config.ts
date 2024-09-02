@@ -1,34 +1,14 @@
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
+// @ts-ignore
 import { TanStackRouterRspack } from '@tanstack/router-plugin/rspack';
+// @ts-ignore
 import { dependencies } from './package.json';
 
 const getApp = () => {
-	switch (process.env.PUBLIC_ENVIRONMENT) {
-		case 'development':
-			return 'betfinio_app@https://app.betfin.dev/mf-manifest.json';
-		case 'production':
-			return 'betfinio_app@https://app.betfin.io/mf-manifest.json';
-		case 'production-ua':
-			return 'betfinio_app@https://app.betfin.gg/mf-manifest.json';
-		default:
-			return 'betfinio_app@http://localhost:5555/mf-manifest.json';
-	}
+	return `betfinio_app@${process.env.PUBLIC_APP_URL}/mf-manifest.json`;
 };
-
-function getOutput() {
-	switch (process.env.PUBLIC_ENVIRONMENT) {
-		case 'development':
-			return 'https://template.betfin.dev';
-		case 'production':
-			return 'https://template.betfin.io';
-		case 'production-ua':
-			return 'https://template.betfin.gg';
-		default:
-			return 'http://localhost:4000';
-	}
-}
 
 export default defineConfig({
 	server: {
@@ -42,7 +22,7 @@ export default defineConfig({
 		favicon: './src/assets/favicon.svg',
 	},
 	output: {
-		assetPrefix: getOutput(),
+		assetPrefix: process.env.PUBLIC_OUTPUT_URL,
 	},
 	plugins: [pluginReact()],
 	tools: {
