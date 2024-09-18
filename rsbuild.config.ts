@@ -26,12 +26,12 @@ export default defineConfig({
 	tools: {
 		rspack: {
 			output: {
-				uniqueName: 'betfinio_games',
+				uniqueName: 'betfinio_template',
 			},
 			plugins: [
 				TanStackRouterRspack(),
 				new ModuleFederationPlugin({
-					name: 'betfinio_games',
+					name: 'betfinio_template',
 					remotes: {
 						betfinio_app: getApp(),
 					},
