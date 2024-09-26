@@ -31,7 +31,7 @@ bun run build
 ## Testnet Faucet
 
 To get testnet BET tokens, please send your address to the following telegram
-account: [@bf_monster](https://t.me/bf_monster)
+account: [@bfmonster](https://t.me/bfmonster)
 or write to email: [bf.monster@proton.me](mailto:bf.monster@proton.me)
 
 To get testnet MATIC tokens, please use the following
