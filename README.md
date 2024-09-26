@@ -42,8 +42,8 @@ faucet: [https://faucet.polygon.technology/](https://faucet.polygon.technology/)
 To use basic UI components, you can import them from the `betfin_app` package:
 
 ```tsx
-import {Select, SelectItem, SelectContent, SelectTrigger, SelectValue} from "betfinio_app/select";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from 'betfinio_app/tabs';
+import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "betfinio_app/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'betfinio_app/tabs';
 import {
 	useTotalProfitStat,
 	useTotalStakedStat,
