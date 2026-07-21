@@ -1,7 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { Boxes, Globe, Plug, Wallet } from 'lucide-react';
+import { Boxes, Coins, Plug, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { erc20Abi, formatUnits } from 'viem';
+import { useAccount, useBalance, useConnect, useDisconnect, useReadContract } from 'wagmi';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { BET_TOKEN } from '@/wagmi';
 
 // Sample host-manifest fragment shown in the UI so the demo is self-documenting.
 const INTEGRATION_SNIPPET = `{
@@ -14,36 +17,110 @@ const INTEGRATION_SNIPPET = `{
   ]
 }`;
 
+function shortAddress(addr?: string) {
+	return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : '';
+}
+
+function fmtAmount(value: string | undefined) {
+	if (value == null) return '—';
+	return Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 });
+}
+
+/** Connected address + POL (native) and BET (ERC-20) balances on Polygon/Amoy. */
+function WalletCard() {
+	const { t } = useTranslation('template');
+	const { address, isConnected, chainId } = useAccount();
+	const { connect, connectors, isPending } = useConnect();
+	const { disconnect } = useDisconnect();
+	const injectedConnector = connectors[0];
+
+	const betAddress = chainId ? BET_TOKEN[chainId] : undefined;
+	const supported = Boolean(betAddress);
+
+	// Balances read on the wallet's CURRENT chain (chainId omitted → wagmi uses the
+	// active connection's chain), which is the same chain `betAddress` is keyed to.
+	// POL — native balance.
+	const { data: pol } = useBalance({
+		address,
+		query: { enabled: isConnected && supported },
+	});
+	const polFormatted = pol ? formatUnits(pol.value, pol.decimals) : undefined;
+
+	// BET — ERC-20 balanceOf + decimals.
+	const { data: betRaw } = useReadContract({
+		address: betAddress,
+		abi: erc20Abi,
+		functionName: 'balanceOf',
+		args: address ? [address] : undefined,
+		query: { enabled: isConnected && supported && Boolean(address) },
+	});
+	const { data: betDecimals } = useReadContract({
+		address: betAddress,
+		abi: erc20Abi,
+		functionName: 'decimals',
+		query: { enabled: supported },
+	});
+	const bet = betRaw != null ? formatUnits(betRaw, betDecimals ?? 18) : undefined;
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					<Wallet className="size-4 text-primary" />
+					{t('wallet.title')}
+				</CardTitle>
+				<CardDescription>{t('wallet.desc')}</CardDescription>
+			</CardHeader>
+			<CardContent className="flex flex-col gap-4">
+				{!isConnected ? (
+					<Button size="sm" className="w-fit" disabled={!injectedConnector || isPending} onClick={() => injectedConnector && connect({ connector: injectedConnector })}>
+						{isPending ? t('wallet.connecting') : t('wallet.connect')}
+					</Button>
+				) : (
+					<>
+						<div className="flex flex-col gap-1">
+							<span className="text-muted-foreground text-xs uppercase tracking-wide">{t('wallet.address')}</span>
+							<code className="w-fit rounded-md bg-muted px-3 py-1.5 text-sm">{shortAddress(address)}</code>
+						</div>
+
+						{supported ? (
+							<div className="grid grid-cols-2 gap-3">
+								<div className="rounded-lg border border-border bg-muted/40 p-4">
+									<div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+										<Coins className="size-3.5" />
+										{t('wallet.pol')}
+									</div>
+									<div className="mt-1 font-semibold text-xl tabular-nums">{fmtAmount(polFormatted)}</div>
+								</div>
+								<div className="rounded-lg border border-border bg-muted/40 p-4">
+									<div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+										<Coins className="size-3.5" />
+										{t('wallet.bet')}
+									</div>
+									<div className="mt-1 font-semibold text-xl tabular-nums">{fmtAmount(bet)}</div>
+								</div>
+							</div>
+						) : (
+							<p className="text-muted-foreground text-sm">{t('wallet.wrongChain')}</p>
+						)}
+
+						<Button variant="outline" size="sm" className="w-fit" onClick={() => disconnect()}>
+							{t('wallet.disconnect')}
+						</Button>
+					</>
+				)}
+			</CardContent>
+		</Card>
+	);
+}
+
 /**
- * The template's feature UI. Everything here works whether the app runs standalone
- * or federated into a host, because it only depends on things a remote can safely
- * share across the boundary:
- *   - `useTranslation()` → this remote's own i18next instance (shared react-i18next)
- *   - `useQuery()`       → a query client (its own standalone, the host's when mounted)
- *
- * It deliberately does NOT call wallet hooks directly. A host's wallet provider
- * lives inside ITS OWN wallet package (e.g. wagmi + Privy), not on the bare shared
- * `wagmi` singleton — so an independent remote cannot read it via `useAccount()`.
- * See the "Wallet & host state" card and the README for the correct approaches.
+ * The template's feature UI. The wallet card uses this remote's OWN
+ * `WagmiProvider` (see pages/main.tsx), so it works standalone and federated
+ * alike — an independent wallet connection, not the host's.
  */
 export function TemplateShell() {
 	const { t } = useTranslation('template');
-
-	// Demo query — renders a live value and shows the query layer works across the
-	// boundary. Uses a public JSON-RPC endpoint, no key required.
-	const { data: block, isLoading } = useQuery({
-		queryKey: ['template', 'eth-block'],
-		queryFn: async () => {
-			const res = await fetch('https://cloudflare-eth.com', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }),
-			});
-			const json = (await res.json()) as { result?: string };
-			return json.result ? Number.parseInt(json.result, 16) : null;
-		},
-		staleTime: 30_000,
-	});
 
 	return (
 		<div className="tpl-root flex flex-col gap-6 text-foreground">
@@ -56,33 +133,7 @@ export function TemplateShell() {
 				<p className="max-w-[62ch] text-muted-foreground">{t('subtitle')}</p>
 			</header>
 
-			<div className="grid gap-4 sm:grid-cols-2">
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Globe className="size-4 text-primary" />
-							{t('query.title')}
-						</CardTitle>
-						<CardDescription>{t('query.desc')}</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="font-semibold text-2xl tabular-nums">{isLoading ? '…' : (block?.toLocaleString() ?? '—')}</div>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Wallet className="size-4 text-primary" />
-							{t('wallet.title')}
-						</CardTitle>
-						<CardDescription>{t('wallet.desc')}</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<p className="text-muted-foreground text-sm leading-relaxed">{t('wallet.body')}</p>
-					</CardContent>
-				</Card>
-			</div>
+			<WalletCard />
 
 			<Card>
 				<CardHeader>

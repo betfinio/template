@@ -2,14 +2,16 @@
 	"badge": "Remoto federado",
 	"title": "Plantilla Betfin",
 	"subtitle": "Un remoto de Module Federation independiente. Ejecútalo por su cuenta o intégralo en cualquier host añadiendo una entrada al manifiesto whitelabel — sin recompilar el host.",
-	"query": {
-		"title": "Último bloque ETH",
-		"desc": "Renderizado a través de la capa de consultas."
-	},
 	"wallet": {
-		"title": "Billetera y estado del host",
-		"desc": "Cómo un remoto lee la billetera del host.",
-		"body": "El host monta su proveedor de billetera dentro de su propio paquete web3, no en el singleton wagmi compartido — así que un remoto independiente no puede leerlo con useAccount(). Consume el paquete web3 compartido del host (remotos del monorepo) o un puente de billetera público que el host exponga. Consulta el README."
+		"title": "Billetera",
+		"desc": "Conexión de billetera propia de este remoto — funciona en modo independiente y federado.",
+		"connect": "Conectar billetera",
+		"connecting": "Conectando…",
+		"disconnect": "Desconectar",
+		"address": "Dirección",
+		"pol": "POL",
+		"bet": "BET",
+		"wrongChain": "Cambia tu billetera a Polygon o Amoy para ver los saldos."
 	},
 	"integrate": {
 		"title": "Integrar vía manifiesto",

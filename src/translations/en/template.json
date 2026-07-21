@@ -2,14 +2,16 @@
 	"badge": "Federated remote",
 	"title": "Betfin Template",
 	"subtitle": "A standalone Module Federation remote. Run it on its own, or plug it into any host by adding one entry to the whitelabel manifest — no host rebuild.",
-	"query": {
-		"title": "Latest ETH block",
-		"desc": "Rendered through the query layer."
-	},
 	"wallet": {
-		"title": "Wallet & host state",
-		"desc": "How a remote reads the host's wallet.",
-		"body": "A host mounts its wallet provider inside its own web3 package, not on the bare shared wagmi singleton — so an independent remote can't read it with useAccount(). Consume the host's shared web3 package (in-monorepo remotes) or a public wallet bridge the host exposes. See the README."
+		"title": "Wallet",
+		"desc": "This remote's own wallet connection — works standalone and federated.",
+		"connect": "Connect wallet",
+		"connecting": "Connecting…",
+		"disconnect": "Disconnect",
+		"address": "Address",
+		"pol": "POL",
+		"bet": "BET",
+		"wrongChain": "Switch your wallet to Polygon or Amoy to see balances."
 	},
 	"integrate": {
 		"title": "Integrate via manifest",
