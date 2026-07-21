@@ -1,13 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Boxes, Globe, Plug, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-function short(addr?: string) {
-	return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : '';
-}
 
 // Sample host-manifest fragment shown in the UI so the demo is self-documenting.
 const INTEGRATION_SNIPPET = `{
@@ -21,24 +15,22 @@ const INTEGRATION_SNIPPET = `{
 }`;
 
 /**
- * The template's feature UI. Everything here reads a SHARED singleton:
- *  - `useAccount()` / `useConnect()` → the host's wallet (shared `wagmi`)
- *  - `useQuery()` → the host's query cache (shared `@tanstack/react-query`)
- *  - `useTranslation()` → this remote's i18next instance (shared `react-i18next`)
- * None of them know or care whether they're running standalone or federated.
+ * The template's feature UI. Everything here works whether the app runs standalone
+ * or federated into a host, because it only depends on things a remote can safely
+ * share across the boundary:
+ *   - `useTranslation()` → this remote's own i18next instance (shared react-i18next)
+ *   - `useQuery()`       → a query client (its own standalone, the host's when mounted)
  *
- * The root element carries `tpl-root`, which is where index.css scopes the theme
- * tokens — so the app is themeable without clobbering the host's `:root`.
+ * It deliberately does NOT call wallet hooks directly. A host's wallet provider
+ * lives inside ITS OWN wallet package (e.g. wagmi + Privy), not on the bare shared
+ * `wagmi` singleton — so an independent remote cannot read it via `useAccount()`.
+ * See the "Wallet & host state" card and the README for the correct approaches.
  */
 export function TemplateShell() {
 	const { t } = useTranslation('template');
-	const { address, isConnected } = useAccount();
-	const { connect, connectors, isPending } = useConnect();
-	const { disconnect } = useDisconnect();
-	const injectedConnector = connectors[0];
 
-	// Demo query — proves the shared query cache works across the boundary. Uses a
-	// public JSON-RPC endpoint, no key required.
+	// Demo query — renders a live value and shows the query layer works across the
+	// boundary. Uses a public JSON-RPC endpoint, no key required.
 	const { data: block, isLoading } = useQuery({
 		queryKey: ['template', 'eth-block'],
 		queryFn: async () => {
@@ -68,31 +60,6 @@ export function TemplateShell() {
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
-							<Wallet className="size-4 text-primary" />
-							{t('wallet.title')}
-						</CardTitle>
-						<CardDescription>{t('wallet.desc')}</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-col items-start gap-3">
-						{isConnected ? (
-							<>
-								<code className="rounded-md bg-muted px-3 py-2 text-sm">{short(address)}</code>
-								<Button variant="outline" size="sm" onClick={() => disconnect()}>
-									{t('wallet.disconnect')}
-								</Button>
-							</>
-						) : (
-							<Button size="sm" disabled={!injectedConnector || isPending} onClick={() => injectedConnector && connect({ connector: injectedConnector })}>
-								{isPending ? t('wallet.connecting') : t('wallet.connect')}
-							</Button>
-						)}
-						<p className="text-muted-foreground text-xs">{t('wallet.hint')}</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
 							<Globe className="size-4 text-primary" />
 							{t('query.title')}
 						</CardTitle>
@@ -100,6 +67,19 @@ export function TemplateShell() {
 					</CardHeader>
 					<CardContent>
 						<div className="font-semibold text-2xl tabular-nums">{isLoading ? '…' : (block?.toLocaleString() ?? '—')}</div>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Wallet className="size-4 text-primary" />
+							{t('wallet.title')}
+						</CardTitle>
+						<CardDescription>{t('wallet.desc')}</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<p className="text-muted-foreground text-sm leading-relaxed">{t('wallet.body')}</p>
 					</CardContent>
 				</Card>
 			</div>

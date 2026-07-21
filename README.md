@@ -44,11 +44,25 @@ Either way the page reads whatever providers sit above it. That works because th
 
 ### Shared singletons (`mf.shared.ts`)
 
-For the page to read the host's state, a handful of packages must resolve to a **single runtime instance** across both apps. That's `react`, `react-dom`, `wagmi`, `@tanstack/react-query`, and `react-i18next`. The host declares the same set; MF negotiates one copy.
+For the page to read the host's state, a handful of packages must resolve to a **single runtime instance** across both apps: `react`, `react-dom`, `@tanstack/react-query`, and `react-i18next`. The host declares the same set; MF negotiates one copy so `useTranslation()` and the query layer behave correctly across the boundary.
 
-The payoff: the page calls `useAccount()` from **public `wagmi`** and gets the *host's* connected wallet — even though the host wires wallets with its own private stack (Privy/WalletConnect). No private dependency needed. Same story for the query cache and i18n.
+Two subtleties this template already handles:
 
-> **`requiredVersion` floors matter.** MF infers a singleton's required version from *this repo's installed* version as `^<installed>`. Since this is a separate repo with its own lockfile, it can install a newer **patch** than the host (e.g. `wagmi 3.7.3` here vs `3.7.0` on the host) — MF would then reject the host's older singleton and fall back to *this* remote's copy, giving you a `WagmiProviderNotFoundError` (unmounted wagmi context) and a duplicate query cache. `mf.shared.ts` therefore pins each singleton to a permissive **major floor** (`^3.0.0`, `^5.0.0`, …) so the remote accepts whatever compatible version the host provides. Bump a floor only when the host jumps a major.
+- **`requiredVersion` floors.** MF infers a singleton's required version from *this repo's installed* version as `^<installed>`. A separate repo has its own lockfile, so it can install a newer **patch** than the host — MF would then reject the host's older singleton and fall back to *this* remote's copy (duplicate instance). `mf.shared.ts` pins each singleton to a permissive **major floor** (`^19.0.0`, `^5.0.0`) so the remote accepts whatever compatible version the host provides.
+- **`shareStrategy: 'loaded-first'`** (not `version-first`). The strategy is applied per-remote. `version-first` makes the remote pick the *highest* version in scope — its own newer copy — instead of the host's. `loaded-first` deterministically resolves to the version the host has **already loaded**, which is what a guest remote must do.
+
+### Wallet & host state — the important caveat
+
+You might expect to read the host's connected wallet by calling `useAccount()` from the shared `wagmi` singleton. **On a Privy-style host this does not work**, and `wagmi` is intentionally left out of `mf.shared.ts`:
+
+> A host mounts its `WagmiProvider` inside its **own** wallet package (wagmi + Privy), so the provider is bound to *that* wagmi instance — not to the bare shared `wagmi` singleton a remote would receive. A remote calling `useAccount()` against shared wagmi finds no provider → `WagmiProviderNotFoundError`.
+
+The host's own remotes avoid this by reading the wallet through the host's **shared wallet package** (their hooks run inside the host's module, where the provider lives). For an app to read the host's wallet, pick one:
+
+1. **Consume the host's wallet package as a shared singleton** — the zero-friction path if your app can depend on it (i.e. it's an in-repo remote, not this fully-independent template).
+2. **Have the host expose a public wallet bridge** — a small exposed module or a public shared package (e.g. `./wallet-state`) that returns `{ address, isConnected, connect() }`. This is the clean way to give *independent* remotes wallet access without leaking the host's private stack.
+
+Until one of those exists, keep wallet-dependent UI out of the exposed surface (as this template does) — everything else federates fine.
 
 ### Styling under federation
 

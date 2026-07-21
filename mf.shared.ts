@@ -29,12 +29,17 @@ export const mfShared = {
 	'react/jsx-runtime': { singleton: false, requiredVersion: '^19.0.0' },
 	'react/jsx-dev-runtime': { singleton: false, requiredVersion: '^19.0.0' },
 	'react-dom': { singleton: true, requiredVersion: '^19.0.0' },
-	// Wallet state. The exposed page calls wagmi hooks (`useAccount`, …) directly;
-	// sharing wagmi means those read the HOST's wallet connection at runtime —
-	// no dependency on the host's private wallet package required.
-	wagmi: { singleton: true, requiredVersion: '^3.0.0' },
 	// One query cache shared with the host.
 	'@tanstack/react-query': { singleton: true, requiredVersion: '^5.0.0' },
+	// NOTE ON WALLET: `wagmi` is intentionally NOT shared here. A host typically
+	// mounts its WagmiProvider inside its OWN wallet package (e.g. wagmi + Privy),
+	// so the provider lives on THAT wagmi instance — not on a bare shared `wagmi`
+	// singleton. A remote calling `useAccount()` against shared wagmi would find no
+	// provider ("WagmiProviderNotFoundError"). To read the host's wallet, consume
+	// the host's wallet package as a shared singleton (what in-monorepo remotes do)
+	// or a public wallet bridge the host exposes — see the README. Only if you know
+	// your host mounts a plain `wagmi` `WagmiProvider` on the shared instance should
+	// you add: `wagmi: { singleton: true, requiredVersion: '^3.0.0' },`
 	// I18nextProvider context. The remote ships its own i18next INSTANCE (exposed
 	// as `./i18n`); sharing `react-i18next` lets the host mount that instance and
 	// have `useTranslation()` inside the page resolve to it.
