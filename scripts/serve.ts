@@ -17,7 +17,7 @@ function headersFor(filePath: string): Headers {
 	const base = path.basename(filePath);
 	if (base === 'mf-manifest.json' || base === 'remoteEntry.js' || base === 'index.html') {
 		h.set('Cache-Control', 'no-store, max-age=0');
-	} else if (filePath.startsWith(path.join(root, 'assets') + path.sep)) {
+	} else if (filePath.startsWith(path.join(root, 'static') + path.sep)) {
 		h.set('Cache-Control', 'public, max-age=31536000, immutable');
 	} else {
 		h.set('Cache-Control', 'no-cache');
