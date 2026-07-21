@@ -1,0 +1,21 @@
+{
+	"badge": "Federated remote",
+	"title": "Betfin Template",
+	"subtitle": "A standalone Module Federation remote. Run it on its own, or plug it into any host by adding one entry to the whitelabel manifest — no host rebuild.",
+	"wallet": {
+		"title": "Wallet",
+		"desc": "Read from the shared wagmi singleton.",
+		"connect": "Connect wallet",
+		"connecting": "Connecting…",
+		"disconnect": "Disconnect",
+		"hint": "Standalone uses your browser's injected wallet. When federated, this reads the host's connected wallet — no changes to this code."
+	},
+	"query": {
+		"title": "Latest ETH block",
+		"desc": "Fetched through the shared query cache."
+	},
+	"integrate": {
+		"title": "Integrate via manifest",
+		"desc": "Add these entries to the host's whitelabel manifest to mount this app."
+	}
+}

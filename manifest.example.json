@@ -1,0 +1,22 @@
+{
+	"_comment": "Host whitelabel-manifest fragment. Merge these entries into the host's manifest to mount this remote. No host rebuild is needed — the host fetches this JSON at boot, registers the remote, and adds the route.",
+	"remotes": {
+		"template": "https://template.your-cdn.com"
+	},
+	"routes": [
+		{
+			"path": "/template",
+			"remote": "template",
+			"module": "./main",
+			"i18n": "./i18n"
+		}
+	],
+	"sidebar": [
+		{
+			"labelKey": "nav.template",
+			"icon": "Boxes",
+			"remote": "template",
+			"to": "/template"
+		}
+	]
+}
