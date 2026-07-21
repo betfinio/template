@@ -23,8 +23,7 @@
 		"erasableSyntaxOnly": true,
 		"noFallthroughCasesInSwitch": true,
 		"paths": {
-			"@/*": ["./src/*"],
-			"@workspace/web3": ["./src/shims/workspace-web3.tsx"]
+			"@/*": ["./src/*"]
 		}
 	},
 	"include": ["src"]

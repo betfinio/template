@@ -1,11 +1,12 @@
+import { useWallet } from '@betfin/sdk';
+import { useQuery } from '@tanstack/react-query';
 import { Boxes, Coins, Plug, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { erc20Abi, formatUnits } from 'viem';
-import { useBalance, useReadContract } from 'wagmi';
-import { useWallet } from '@workspace/web3';
+import { createPublicClient, erc20Abi, formatEther, formatUnits, http } from 'viem';
+import { polygon, polygonAmoy } from 'viem/chains';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BET_TOKEN, SUPPORTED_CHAIN_IDS, type SupportedChainId } from '@/wagmi';
+import { BET_TOKEN, isSupportedChain, type SupportedChainId } from '@/tokens';
 
 // Sample host-manifest fragment shown in the UI so the demo is self-documenting.
 const INTEGRATION_SNIPPET = `{
@@ -18,6 +19,12 @@ const INTEGRATION_SNIPPET = `{
   ]
 }`;
 
+// Read-only public clients — no wallet connection needed for balance reads.
+const publicClients = {
+	[polygon.id]: createPublicClient({ chain: polygon, transport: http() }),
+	[polygonAmoy.id]: createPublicClient({ chain: polygonAmoy, transport: http() }),
+} as const;
+
 function shortAddress(addr?: string) {
 	return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : '';
 }
@@ -27,48 +34,34 @@ function fmtAmount(value: string | undefined) {
 	return Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 });
 }
 
-function isSupportedChain(id: number | undefined): id is SupportedChainId {
-	return id != null && (SUPPORTED_CHAIN_IDS as readonly number[]).includes(id);
+async function fetchBalances(chainId: SupportedChainId, address: `0x${string}`) {
+	const client = publicClients[chainId];
+	const token = BET_TOKEN[chainId];
+	const [pol, betRaw, betDecimals] = await Promise.all([
+		client.getBalance({ address }),
+		client.readContract({ address: token, abi: erc20Abi, functionName: 'balanceOf', args: [address] }),
+		client.readContract({ address: token, abi: erc20Abi, functionName: 'decimals' }),
+	]);
+	return { pol: formatEther(pol), bet: formatUnits(betRaw, betDecimals) };
 }
 
 /**
- * Wallet card. The IDENTITY (address / chain / connect) comes from the shared
- * `@workspace/web3` singleton — i.e. the HOST's connected wallet when federated,
- * so there's ONE wallet, connected through the host's UI. Balances are read
- * independently via public RPC for that address, so no second connection exists.
+ * Wallet card. The identity (address / chain / connect) comes from the shared
+ * `@betfin/sdk` `useWallet()` — the HOST's connected wallet when federated, the
+ * `<MockHost>` dev wallet when standalone. Balances are read independently via
+ * public RPC (viem), so there's exactly ONE wallet connection (the host's).
  */
 function WalletCard() {
 	const { t } = useTranslation('template');
 	const { address, isConnected, chainId, login } = useWallet();
 
 	const cid = isSupportedChain(chainId) ? chainId : undefined;
-	const betAddress = cid ? BET_TOKEN[cid] : undefined;
-
-	// POL — native balance, read on the wallet's chain via public RPC.
-	const { data: pol } = useBalance({
-		address,
-		chainId: cid,
-		query: { enabled: isConnected && Boolean(cid) },
+	const { data } = useQuery({
+		queryKey: ['balances', chainId, address],
+		enabled: isConnected && Boolean(cid && address),
+		staleTime: 30_000,
+		queryFn: () => fetchBalances(cid as SupportedChainId, address as `0x${string}`),
 	});
-	const polFormatted = pol ? formatUnits(pol.value, pol.decimals) : undefined;
-
-	// BET — ERC-20 balanceOf + decimals for that address.
-	const { data: betRaw } = useReadContract({
-		address: betAddress,
-		abi: erc20Abi,
-		functionName: 'balanceOf',
-		args: address ? [address] : undefined,
-		chainId: cid,
-		query: { enabled: isConnected && Boolean(betAddress && address) },
-	});
-	const { data: betDecimals } = useReadContract({
-		address: betAddress,
-		abi: erc20Abi,
-		functionName: 'decimals',
-		chainId: cid,
-		query: { enabled: Boolean(betAddress) },
-	});
-	const bet = betRaw != null ? formatUnits(betRaw, betDecimals ?? 18) : undefined;
 
 	return (
 		<Card>
@@ -98,14 +91,14 @@ function WalletCard() {
 										<Coins className="size-3.5" />
 										{t('wallet.pol')}
 									</div>
-									<div className="mt-1 font-semibold text-xl tabular-nums">{fmtAmount(polFormatted)}</div>
+									<div className="mt-1 font-semibold text-xl tabular-nums">{fmtAmount(data?.pol)}</div>
 								</div>
 								<div className="rounded-lg border border-border bg-muted/40 p-4">
 									<div className="flex items-center gap-1.5 text-muted-foreground text-xs">
 										<Coins className="size-3.5" />
 										{t('wallet.bet')}
 									</div>
-									<div className="mt-1 font-semibold text-xl tabular-nums">{fmtAmount(bet)}</div>
+									<div className="mt-1 font-semibold text-xl tabular-nums">{fmtAmount(data?.bet)}</div>
 								</div>
 							</div>
 						) : (
@@ -119,9 +112,9 @@ function WalletCard() {
 }
 
 /**
- * The template's feature UI. The wallet card reflects the host's connected wallet
- * (via the shared `@workspace/web3` singleton) when federated, and falls back to
- * this remote's own wallet when run standalone.
+ * The template's feature UI. Everything is driven by shared singletons the host
+ * provides (`@betfin/sdk` wallet, shared query client, shared react-i18next), so
+ * it works federated and standalone alike.
  */
 export function TemplateShell() {
 	const { t } = useTranslation('template');

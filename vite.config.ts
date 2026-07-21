@@ -1,16 +1,15 @@
 import path from 'node:path';
 import { federation } from '@module-federation/vite';
+import { mfRemoteShareStrategy, mfShared } from '@betfin/sdk/mf';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import { mfRemoteShareStrategy, mfShared } from './mf.shared';
 
 // The container name a host uses to reference this remote (`template/main`,
-// `template/i18n`). Change it here when you rename the app — keep it in sync with
-// the `remotes` key in the host manifest.
+// `template/i18n`). Keep it in sync with the `remotes` key in the host manifest.
 const REMOTE_NAME = 'template';
 
-// Dev port for standalone `bun dev`. Also the origin baked into chunk/CSS URLs so
+// Dev port for standalone `bun dev`, and the origin baked into chunk/CSS URLs so
 // a host on another port can load them cross-origin during local development.
 const PORT = 5200;
 
@@ -23,37 +22,37 @@ export default defineConfig({
 			name: REMOTE_NAME,
 			filename: 'remoteEntry.js',
 			// Standalone remotes must initialize federation at the entry boundary so
-			// shared peers (react-query, wagmi, …) receive a populated React singleton.
+			// shared peers receive a populated React singleton.
 			hostInitInjectLocation: 'entry',
 			// Emit `mf-manifest.json` so a host can register this remote by manifest URL.
 			manifest: true,
-			// The host declares remote types via ambient d.ts; MF's type extraction is
-			// dead weight here (and its dev worker can crash under `--mode production`).
 			dts: false,
-			// The federated surface. `./main` is the page; `./i18n` is this remote's
-			// isolated i18next instance. Add more pages here and route to them from the
-			// host manifest — no host rebuild needed.
 			exposes: {
 				'./main': './src/pages/main.tsx',
 				'./i18n': './src/i18n.ts',
 			},
+			// The IDENTICAL shared map the host uses (from @betfin/sdk) — the platform
+			// contract (@betfin/sdk) is a shared singleton, so `useWallet()` resolves
+			// to the host's wallet. wagmi is NOT shared; this app reads chain data with
+			// its own bundled viem.
 			shared: mfShared,
 			shareStrategy: mfRemoteShareStrategy,
 		}),
 	],
-	// Expose PUBLIC_* env vars to import.meta.env (mirrors the reference host).
 	envPrefix: 'PUBLIC_',
+	// `@betfin/sdk/mock` is a pre-built package that imports wagmi; force Vite to
+	// pre-bundle that whole chain as a unit so CJS deps (e.g. eventemitter3) get
+	// consistent ESM-interop in standalone dev. (Not needed under federation — the
+	// host provides the wallet and MockHost isn't loaded there.)
+	optimizeDeps: {
+		include: ['@betfin/sdk/mock', 'wagmi', 'wagmi/chains', 'wagmi/connectors', 'viem', '@tanstack/react-query'],
+	},
 	server: { host: '0.0.0.0', port: PORT, cors: true, origin: `http://localhost:${PORT}` },
 	preview: { port: PORT, cors: true },
-	// MF runtime uses top-level await — needs a modern output target.
 	build: { target: 'esnext' },
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
-			// Local build-time stand-in for the host's private wallet singleton. At
-			// runtime, MF's shared scope resolves `@workspace/web3` to the HOST's real
-			// module (see mf.shared.ts + src/shims/workspace-web3.tsx).
-			'@workspace/web3': path.resolve(__dirname, './src/shims/workspace-web3.tsx'),
 		},
 	},
 });
