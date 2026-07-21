@@ -3,7 +3,8 @@
 	"references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
 	"compilerOptions": {
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@workspace/web3": ["./src/shims/workspace-web3.tsx"]
 		}
 	}
 }

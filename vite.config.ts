@@ -50,6 +50,10 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
+			// Local build-time stand-in for the host's private wallet singleton. At
+			// runtime, MF's shared scope resolves `@workspace/web3` to the HOST's real
+			// module (see mf.shared.ts + src/shims/workspace-web3.tsx).
+			'@workspace/web3': path.resolve(__dirname, './src/shims/workspace-web3.tsx'),
 		},
 	},
 });

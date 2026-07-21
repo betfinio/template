@@ -4,7 +4,7 @@
 	"subtitle": "Un remoto de Module Federation independiente. Ejecútalo por su cuenta o intégralo en cualquier host añadiendo una entrada al manifiesto whitelabel — sin recompilar el host.",
 	"wallet": {
 		"title": "Billetera",
-		"desc": "Conexión de billetera propia de este remoto — funciona en modo independiente y federado.",
+		"desc": "Refleja la billetera conectada del host cuando está federado; la suya propia en modo independiente.",
 		"connect": "Conectar billetera",
 		"connecting": "Conectando…",
 		"disconnect": "Desconectar",

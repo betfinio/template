@@ -4,7 +4,7 @@
 	"subtitle": "A standalone Module Federation remote. Run it on its own, or plug it into any host by adding one entry to the whitelabel manifest — no host rebuild.",
 	"wallet": {
 		"title": "Wallet",
-		"desc": "This remote's own wallet connection — works standalone and federated.",
+		"desc": "Reflects the host's connected wallet when federated; its own when standalone.",
 		"connect": "Connect wallet",
 		"connecting": "Connecting…",
 		"disconnect": "Disconnect",

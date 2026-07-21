@@ -1,10 +1,11 @@
 import { Boxes, Coins, Plug, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { erc20Abi, formatUnits } from 'viem';
-import { useAccount, useBalance, useConnect, useDisconnect, useReadContract } from 'wagmi';
+import { useBalance, useReadContract } from 'wagmi';
+import { useWallet } from '@workspace/web3';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BET_TOKEN } from '@/wagmi';
+import { BET_TOKEN, SUPPORTED_CHAIN_IDS, type SupportedChainId } from '@/wagmi';
 
 // Sample host-manifest fragment shown in the UI so the demo is self-documenting.
 const INTEGRATION_SNIPPET = `{
@@ -26,39 +27,46 @@ function fmtAmount(value: string | undefined) {
 	return Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 });
 }
 
-/** Connected address + POL (native) and BET (ERC-20) balances on Polygon/Amoy. */
+function isSupportedChain(id: number | undefined): id is SupportedChainId {
+	return id != null && (SUPPORTED_CHAIN_IDS as readonly number[]).includes(id);
+}
+
+/**
+ * Wallet card. The IDENTITY (address / chain / connect) comes from the shared
+ * `@workspace/web3` singleton — i.e. the HOST's connected wallet when federated,
+ * so there's ONE wallet, connected through the host's UI. Balances are read
+ * independently via public RPC for that address, so no second connection exists.
+ */
 function WalletCard() {
 	const { t } = useTranslation('template');
-	const { address, isConnected, chainId } = useAccount();
-	const { connect, connectors, isPending } = useConnect();
-	const { disconnect } = useDisconnect();
-	const injectedConnector = connectors[0];
+	const { address, isConnected, chainId, login } = useWallet();
 
-	const betAddress = chainId ? BET_TOKEN[chainId] : undefined;
-	const supported = Boolean(betAddress);
+	const cid = isSupportedChain(chainId) ? chainId : undefined;
+	const betAddress = cid ? BET_TOKEN[cid] : undefined;
 
-	// Balances read on the wallet's CURRENT chain (chainId omitted → wagmi uses the
-	// active connection's chain), which is the same chain `betAddress` is keyed to.
-	// POL — native balance.
+	// POL — native balance, read on the wallet's chain via public RPC.
 	const { data: pol } = useBalance({
 		address,
-		query: { enabled: isConnected && supported },
+		chainId: cid,
+		query: { enabled: isConnected && Boolean(cid) },
 	});
 	const polFormatted = pol ? formatUnits(pol.value, pol.decimals) : undefined;
 
-	// BET — ERC-20 balanceOf + decimals.
+	// BET — ERC-20 balanceOf + decimals for that address.
 	const { data: betRaw } = useReadContract({
 		address: betAddress,
 		abi: erc20Abi,
 		functionName: 'balanceOf',
 		args: address ? [address] : undefined,
-		query: { enabled: isConnected && supported && Boolean(address) },
+		chainId: cid,
+		query: { enabled: isConnected && Boolean(betAddress && address) },
 	});
 	const { data: betDecimals } = useReadContract({
 		address: betAddress,
 		abi: erc20Abi,
 		functionName: 'decimals',
-		query: { enabled: supported },
+		chainId: cid,
+		query: { enabled: Boolean(betAddress) },
 	});
 	const bet = betRaw != null ? formatUnits(betRaw, betDecimals ?? 18) : undefined;
 
@@ -73,8 +81,8 @@ function WalletCard() {
 			</CardHeader>
 			<CardContent className="flex flex-col gap-4">
 				{!isConnected ? (
-					<Button size="sm" className="w-fit" disabled={!injectedConnector || isPending} onClick={() => injectedConnector && connect({ connector: injectedConnector })}>
-						{isPending ? t('wallet.connecting') : t('wallet.connect')}
+					<Button size="sm" className="w-fit" onClick={() => login()}>
+						{t('wallet.connect')}
 					</Button>
 				) : (
 					<>
@@ -83,7 +91,7 @@ function WalletCard() {
 							<code className="w-fit rounded-md bg-muted px-3 py-1.5 text-sm">{shortAddress(address)}</code>
 						</div>
 
-						{supported ? (
+						{cid ? (
 							<div className="grid grid-cols-2 gap-3">
 								<div className="rounded-lg border border-border bg-muted/40 p-4">
 									<div className="flex items-center gap-1.5 text-muted-foreground text-xs">
@@ -103,10 +111,6 @@ function WalletCard() {
 						) : (
 							<p className="text-muted-foreground text-sm">{t('wallet.wrongChain')}</p>
 						)}
-
-						<Button variant="outline" size="sm" className="w-fit" onClick={() => disconnect()}>
-							{t('wallet.disconnect')}
-						</Button>
 					</>
 				)}
 			</CardContent>
@@ -115,9 +119,9 @@ function WalletCard() {
 }
 
 /**
- * The template's feature UI. The wallet card uses this remote's OWN
- * `WagmiProvider` (see pages/main.tsx), so it works standalone and federated
- * alike — an independent wallet connection, not the host's.
+ * The template's feature UI. The wallet card reflects the host's connected wallet
+ * (via the shared `@workspace/web3` singleton) when federated, and falls back to
+ * this remote's own wallet when run standalone.
  */
 export function TemplateShell() {
 	const { t } = useTranslation('template');

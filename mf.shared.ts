@@ -44,6 +44,13 @@ export const mfShared = {
 	// as `./i18n`); sharing `react-i18next` lets the host mount that instance and
 	// have `useTranslation()` inside the page resolve to it.
 	'react-i18next': { singleton: true, requiredVersion: '^15.0.0' },
+	// The host's wallet singleton. Sharing it (loaded-first) means the exposed page's
+	// `useWallet()` resolves to the HOST's instance at runtime — the host's connected
+	// wallet — instead of this repo's build-time shim. `requiredVersion: false` +
+	// `version` accept whatever the host ships (its @workspace/web3 is unversioned).
+	// This is how in-monorepo remotes (staking/affiliate) read the wallet; the shim
+	// (src/shims/workspace-web3.tsx) only stands in for standalone dev.
+	'@workspace/web3': { singleton: true, requiredVersion: false, version: '0.0.0' },
 	// If your host also shares the router and your exposed page uses router hooks
 	// or <Link>, add it so they resolve to the host's router:
 	// '@tanstack/react-router': { singleton: true, requiredVersion: '^1.0.0' },

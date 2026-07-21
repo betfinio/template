@@ -3,14 +3,13 @@ import { polygon, polygonAmoy } from 'wagmi/chains';
 import { injected } from 'wagmi/connectors';
 
 /**
- * This remote's OWN wagmi config. It's deliberately self-contained (bundled, and
- * NOT listed in `mf.shared.ts`) so the exposed page can mount its own
- * `WagmiProvider` and read a wallet whether it runs standalone or federated —
- * without depending on, or colliding with, the host's private wallet stack.
- *
- * The injected connector talks to the browser wallet (MetaMask, etc.) for the
- * current page origin. When federated into a host where the same browser wallet
- * is already authorized, it reconnects to the same account automatically.
+ * This remote's wagmi config. Two jobs:
+ *   1. Read-only balance queries (POL / BET) via public RPC — these work for any
+ *      address without a connection, so they run fine when federated (reading the
+ *      host wallet's address) and standalone alike.
+ *   2. The standalone wallet connection (injected connector), used only when this
+ *      app runs on its own — see src/shims/workspace-web3.tsx. When federated, the
+ *      host owns the connection and this config is used purely for reads.
  */
 export const wagmiConfig = createConfig({
 	chains: [polygonAmoy, polygon],
@@ -22,8 +21,12 @@ export const wagmiConfig = createConfig({
 	},
 });
 
+/** Chains this remote can read balances on. */
+export const SUPPORTED_CHAIN_IDS = [polygonAmoy.id, polygon.id] as const;
+export type SupportedChainId = (typeof SUPPORTED_CHAIN_IDS)[number];
+
 /** BET token (Betfin) — public on-chain addresses, keyed by chain id. */
-export const BET_TOKEN: Record<number, `0x${string}`> = {
+export const BET_TOKEN: Record<SupportedChainId, `0x${string}`> = {
 	[polygon.id]: '0xbF7970D56a150cD0b60BD08388A4A75a27777777',
 	[polygonAmoy.id]: '0x0F19ef9416d384F12d87Edf0733C11843F358e3d',
 };
