@@ -48,7 +48,7 @@ For the page to read the host's state, a handful of packages must resolve to a *
 
 The payoff: the page calls `useAccount()` from **public `wagmi`** and gets the *host's* connected wallet — even though the host wires wallets with its own private stack (Privy/WalletConnect). No private dependency needed. Same story for the query cache and i18n.
 
-> Keep these package **versions** compatible with the host's (see `package.json`). With `singleton: true`, a hard mismatch warns and MF falls back to one instance (the host's, since it loads first) — matching majors avoids surprises.
+> **`requiredVersion` floors matter.** MF infers a singleton's required version from *this repo's installed* version as `^<installed>`. Since this is a separate repo with its own lockfile, it can install a newer **patch** than the host (e.g. `wagmi 3.7.3` here vs `3.7.0` on the host) — MF would then reject the host's older singleton and fall back to *this* remote's copy, giving you a `WagmiProviderNotFoundError` (unmounted wagmi context) and a duplicate query cache. `mf.shared.ts` therefore pins each singleton to a permissive **major floor** (`^3.0.0`, `^5.0.0`, …) so the remote accepts whatever compatible version the host provides. Bump a floor only when the host jumps a major.
 
 ### Styling under federation
 
