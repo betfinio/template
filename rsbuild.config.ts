@@ -36,15 +36,16 @@ export default defineConfig({
 	],
 	source: {
 		entry: { index: './src/main.tsx' },
-		alias: { '@': path.resolve(__dirname, './src') },
 	},
-	tools: {
-		// `@wagmi/core/tempo` has an optional `import('accounts')` (a graceful-fail,
-		// turbopack-optional import). Vite/esbuild tolerate the unresolvable specifier;
-		// Rspack tries to resolve it and errors. That code path (the tempo/accounts
-		// connector) is never invoked here — MockHost uses the injected connector — so
-		// stub it to an empty module. `alias: false` is webpack/Rspack's "ignore this".
-		rspack: { resolve: { alias: { accounts: false } } },
+	resolve: {
+		alias: {
+			'@': path.resolve(__dirname, './src'),
+			// `@wagmi/core/tempo` has an optional `import('accounts')` (a graceful-fail,
+			// turbopack-optional import). Vite/esbuild tolerate the unresolvable
+			// specifier; Rspack tries to resolve it and errors. That connector path is
+			// never invoked here (MockHost uses the injected connector), so stub it.
+			accounts: false,
+		},
 	},
 	// `class="dark"` on <html>, favicon, title live in index.html; Rsbuild injects
 	// the bundled script/style tags into it.
