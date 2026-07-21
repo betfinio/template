@@ -44,5 +44,19 @@ export const mfShared = {
 	// '@tanstack/react-router': { singleton: true, requiredVersion: '^1.0.0' },
 } as const;
 
-/** Remote-only apps preload their local shares before their standalone entry. */
-export const mfRemoteShareStrategy = 'version-first' as const;
+/**
+ * `loaded-first`, NOT `version-first`. The share strategy is applied per-remote
+ * from the config that declared the share — so THIS remote's strategy decides how
+ * it resolves its own `wagmi`/`react-query` imports at runtime.
+ *
+ * With `version-first`, the remote picks the HIGHEST version in the shared scope.
+ * Since this repo may install a newer patch than the host (own lockfile), that
+ * would be the remote's OWN copy — a different instance than the one the host's
+ * providers mounted → `WagmiProviderNotFoundError`, duplicate query cache.
+ *
+ * `loaded-first` deterministically resolves to the version the host has ALREADY
+ * loaded (its live singleton, whose providers are mounted), which is exactly what
+ * a guest remote must do. It also matches the host's own strategy. In standalone
+ * there's only the remote's own copy, so it's picked — no behavior change.
+ */
+export const mfRemoteShareStrategy = 'loaded-first' as const;
