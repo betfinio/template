@@ -1,10 +1,10 @@
 import { useWallet } from '@betfin/sdk';
+import { Button } from '@betfin/ui/components/button';
 import { useQuery } from '@tanstack/react-query';
 import { Boxes, Coins, Plug, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { createPublicClient, erc20Abi, formatEther, formatUnits, http } from 'viem';
 import { polygon, polygonAmoy } from 'viem/chains';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BET_TOKEN, isSupportedChain, type SupportedChainId } from '@/tokens';
 
