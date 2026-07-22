@@ -57,5 +57,5 @@ export default defineConfig({
 	},
 	// Absolute asset URLs (dev + build) so the host loads chunks from this origin.
 	dev: { assetPrefix: ORIGIN },
-	output: { assetPrefix: ORIGIN },
+	output: { assetPrefix: 'auto' },
 });
