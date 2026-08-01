@@ -8,19 +8,37 @@ Built to match the Betfin host contract, but it depends on **public npm packages
 Rsbuild 2  ·  React 19  ·  Module Federation 2  ·  wagmi 3  ·  @tanstack/react-query 5  ·  react-i18next 15  ·  Tailwind v4
 ```
 
-## Build with an AI coding agent
+## Create an app with AI — no coding required
 
-[![Use this template](https://img.shields.io/badge/1._Use_this-template-238636?style=for-the-badge&logo=github)](https://github.com/betfinio/template/generate)
-[![Open in Codex](https://img.shields.io/badge/2._Open_in-Codex-111111?style=for-the-badge&logo=openai)](https://chatgpt.com/codex?prompt=Read%20AGENTS.md%20and%20README.md%20before%20changing%20code.%20Ask%20me%20what%20app%20to%20build%2C%20then%20implement%20it%20as%20a%20production-ready%20Betfin%20federated%20remote.%20Keep%20the%20public%20%40betfin%2Fsdk%20and%20%40betfin%2Fui%20integration%2C%20Module%20Federation%20manifest%20contract%2C%20i18n%2C%20CSS%20isolation%2C%20and%20verification%20gates%20intact.)
-[![Open in Claude Code](https://img.shields.io/badge/2._Open_in-Claude_Code-D97757?style=for-the-badge&logo=anthropic)](https://claude.ai/code/new?q=Read%20AGENTS.md%20and%20README.md%20before%20changing%20code.%20Ask%20me%20what%20app%20to%20build%2C%20then%20implement%20it%20as%20a%20production-ready%20Betfin%20federated%20remote.%20Keep%20the%20public%20%40betfin%2Fsdk%20and%20%40betfin%2Fui%20integration%2C%20Module%20Federation%20manifest%20contract%2C%20i18n%2C%20CSS%20isolation%2C%20and%20verification%20gates%20intact.)
+[![Create your app repository](https://img.shields.io/badge/1._Create_your-app_repository-238636?style=for-the-badge&logo=github)](https://github.com/betfinio/template/generate)
+[![Build with Codex](https://img.shields.io/badge/2._Build_with-Codex-111111?style=for-the-badge&logo=openai)](https://chatgpt.com/codex?prompt=Help%20a%20non-technical%20user%20create%20a%20Betfin%20app%20from%20the%20official%20template%3A%20https%3A%2F%2Fgithub.com%2Fbetfinio%2Ftemplate%0A%0ABefore%20editing%2C%20confirm%20the%20selected%20repository%20was%20created%20from%20that%20template%20and%20read%20AGENTS.md%20and%20README.md.%20If%20no%20repository%20is%20selected%20or%20those%20files%20are%20missing%2C%20stop%20and%20explain%20simply%3A%20open%20https%3A%2F%2Fgithub.com%2Fbetfinio%2Ftemplate%2Fgenerate%2C%20create%20my%20own%20repository%2C%20connect%20GitHub%2C%20and%20select%20it%20here.%20Never%20edit%20betfinio%2Ftemplate%20itself.%0A%0AAsk%20me%3A%20%22What%20app%20would%20you%20like%20to%20create%2C%20and%20what%20should%20people%20be%20able%20to%20do%20in%20it%3F%22%20Use%20plain%20language%2C%20avoid%20technical%20questions%20unless%20blocked%2C%20and%20make%20sensible%20product%2C%20design%2C%20and%20engineering%20decisions%20for%20me.%0A%0AImplement%20the%20complete%2C%20polished%20app%20by%20following%20AGENTS.md.%20Preserve%20the%20public%20%40betfin%2Fsdk%20and%20%40betfin%2Fui%20integrations%20and%20every%20federation%2C%20manifest%2C%20provider%2C%20i18n%2C%20CSS-isolation%2C%20and%20verification%20contract.%20Rename%20the%20example%2C%20routes%2C%20translations%2C%20and%20manifest%20consistently.%20Run%20all%20required%20checks%20and%20fix%20failures.%0A%0AEnd%20with%20a%20simple%20summary%20and%20numbered%20deployment%20and%20Betfin%20host-manifest%20instructions.%20Assume%20I%20have%20no%20coding%2C%20Git%2C%20terminal%2C%20Module%20Federation%2C%20or%20deployment%20knowledge.)
+[![Build with Claude Code](https://img.shields.io/badge/2._Build_with-Claude_Code-D97757?style=for-the-badge&logo=anthropic)](https://claude.ai/code/new?q=Help%20a%20non-technical%20user%20create%20a%20Betfin%20app%20from%20the%20official%20template%3A%20https%3A%2F%2Fgithub.com%2Fbetfinio%2Ftemplate%0A%0ABefore%20editing%2C%20confirm%20the%20selected%20repository%20was%20created%20from%20that%20template%20and%20read%20AGENTS.md%20and%20README.md.%20If%20no%20repository%20is%20selected%20or%20those%20files%20are%20missing%2C%20stop%20and%20explain%20simply%3A%20open%20https%3A%2F%2Fgithub.com%2Fbetfinio%2Ftemplate%2Fgenerate%2C%20create%20my%20own%20repository%2C%20connect%20GitHub%2C%20and%20select%20it%20here.%20Never%20edit%20betfinio%2Ftemplate%20itself.%0A%0AAsk%20me%3A%20%22What%20app%20would%20you%20like%20to%20create%2C%20and%20what%20should%20people%20be%20able%20to%20do%20in%20it%3F%22%20Use%20plain%20language%2C%20avoid%20technical%20questions%20unless%20blocked%2C%20and%20make%20sensible%20product%2C%20design%2C%20and%20engineering%20decisions%20for%20me.%0A%0AImplement%20the%20complete%2C%20polished%20app%20by%20following%20AGENTS.md.%20Preserve%20the%20public%20%40betfin%2Fsdk%20and%20%40betfin%2Fui%20integrations%20and%20every%20federation%2C%20manifest%2C%20provider%2C%20i18n%2C%20CSS-isolation%2C%20and%20verification%20contract.%20Rename%20the%20example%2C%20routes%2C%20translations%2C%20and%20manifest%20consistently.%20Run%20all%20required%20checks%20and%20fix%20failures.%0A%0AEnd%20with%20a%20simple%20summary%20and%20numbered%20deployment%20and%20Betfin%20host-manifest%20instructions.%20Assume%20I%20have%20no%20coding%2C%20Git%2C%20terminal%2C%20Module%20Federation%2C%20or%20deployment%20knowledge.)
 
-The agent links are regular HTTPS links and work in a browser; no desktop app is required.
+These are regular HTTPS links and work in a browser; no desktop app is required. You only need a GitHub account and access to either coding agent.
 
-1. Click **Use this template** and create your own repository.
-2. Open Codex or Claude Code, connect GitHub if prompted, and select the repository you just created.
-3. Describe the app you want. The prefilled prompt tells the agent to read this repository's guidance and preserve the host-integration contracts.
+1. Click **Create your app repository**, choose a name, and let GitHub copy this template into your account.
+2. From your new repository, click **Build with Codex** or **Build with Claude Code**.
+3. Connect GitHub if asked and select the repository you just created.
+4. Answer one simple question about what you want the app to do. The agent handles the code, design-system integration, checks, and technical decisions.
 
-> GitHub cannot substitute the new repository's owner and name into a copied README link, so repository selection happens inside the coding agent.
+The prompt also tells the agent to guide you through any missing setup in plain language and finish with exact deployment and host-manifest steps. **Build with Claude Code** uses Claude Code rather than a normal Claude Artifact because this flow creates a real, deployable GitHub project.
+
+<details>
+<summary>Prompt used by both agent buttons (copy it if it is not prefilled)</summary>
+
+```text
+Help a non-technical user create a Betfin app from the official template: https://github.com/betfinio/template
+
+Before editing, confirm the selected repository was created from that template and read AGENTS.md and README.md. If no repository is selected or those files are missing, stop and explain simply: open https://github.com/betfinio/template/generate, create my own repository, connect GitHub, and select it here. Never edit betfinio/template itself.
+
+Ask me: "What app would you like to create, and what should people be able to do in it?" Use plain language, avoid technical questions unless blocked, and make sensible product, design, and engineering decisions for me.
+
+Implement the complete, polished app by following AGENTS.md. Preserve the public @betfin/sdk and @betfin/ui integrations and every federation, manifest, provider, i18n, CSS-isolation, and verification contract. Rename the example, routes, translations, and manifest consistently. Run all required checks and fix failures.
+
+End with a simple summary and numbered deployment and Betfin host-manifest instructions. Assume I have no coding, Git, terminal, Module Federation, or deployment knowledge.
+```
+
+</details>
 
 ## Quick start
 
