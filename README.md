@@ -8,6 +8,20 @@ Built to match the Betfin host contract, but it depends on **public npm packages
 Rsbuild 2  ·  React 19  ·  Module Federation 2  ·  wagmi 3  ·  @tanstack/react-query 5  ·  react-i18next 15  ·  Tailwind v4
 ```
 
+## Build with an AI coding agent
+
+[![Use this template](https://img.shields.io/badge/1._Use_this-template-238636?style=for-the-badge&logo=github)](https://github.com/betfinio/template/generate)
+[![Open in Codex](https://img.shields.io/badge/2._Open_in-Codex-111111?style=for-the-badge&logo=openai)](https://chatgpt.com/codex?prompt=Read%20AGENTS.md%20and%20README.md%20before%20changing%20code.%20Ask%20me%20what%20app%20to%20build%2C%20then%20implement%20it%20as%20a%20production-ready%20Betfin%20federated%20remote.%20Keep%20the%20public%20%40betfin%2Fsdk%20and%20%40betfin%2Fui%20integration%2C%20Module%20Federation%20manifest%20contract%2C%20i18n%2C%20CSS%20isolation%2C%20and%20verification%20gates%20intact.)
+[![Open in Claude Code](https://img.shields.io/badge/2._Open_in-Claude_Code-D97757?style=for-the-badge&logo=anthropic)](https://claude.ai/code/new?q=Read%20AGENTS.md%20and%20README.md%20before%20changing%20code.%20Ask%20me%20what%20app%20to%20build%2C%20then%20implement%20it%20as%20a%20production-ready%20Betfin%20federated%20remote.%20Keep%20the%20public%20%40betfin%2Fsdk%20and%20%40betfin%2Fui%20integration%2C%20Module%20Federation%20manifest%20contract%2C%20i18n%2C%20CSS%20isolation%2C%20and%20verification%20gates%20intact.)
+
+The agent links are regular HTTPS links and work in a browser; no desktop app is required.
+
+1. Click **Use this template** and create your own repository.
+2. Open Codex or Claude Code, connect GitHub if prompted, and select the repository you just created.
+3. Describe the app you want. The prefilled prompt tells the agent to read this repository's guidance and preserve the host-integration contracts.
+
+> GitHub cannot substitute the new repository's owner and name into a copied README link, so repository selection happens inside the coding agent.
+
 ## Quick start
 
 ```bash
