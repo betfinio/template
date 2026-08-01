@@ -104,7 +104,7 @@ The host fetches this JSON at boot, registers the remote's `mf-manifest.json`, a
 
 ## Rename the remote
 
-The name `template` appears in: `rsbuild.config.ts` (`REMOTE_NAME`), `manifest.example.json`, and the i18n namespace (`src/i18n.ts` + `src/i18next.d.ts` + `translations/*/template.json`). Update those together.
+The name `template` appears in: `rsbuild.config.ts` (`REMOTE_NAME`), `manifest.example.json`, and the i18n namespace (`src/i18n.ts` + `src/i18next.d.ts` + `translations/*/template.json`). Update those together. Also replace `.tpl-scope` in `postcss.config.mjs` and every exposed page with a unique scope such as `.rewards-scope`, so two independently deployed remotes cannot style one another.
 
 ## Deploy
 
@@ -126,7 +126,6 @@ src/
   pages/main.tsx      EXPOSED module ./main — provider-free page
   i18n.ts             EXPOSED module ./i18n — isolated i18next instance
   index.css           Tailwind + scoped theme tokens (ships in the federated chunk)
-  wagmi.ts            standalone-only wallet config
   components/         self-contained UI (swap for your own design system)
 ```
 
