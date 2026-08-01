@@ -12,7 +12,7 @@ import Main from './pages/main';
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<MockHost i18n={i18n}>
-			<div className="mx-auto w-full max-w-[1100px] px-4 py-8">
+			<div style={{ margin: '0 auto', width: '100%', maxWidth: 1100, padding: '2rem 1rem' }}>
 				<Main />
 			</div>
 		</MockHost>

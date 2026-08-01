@@ -1,8 +1,9 @@
-// Tailwind v4 via PostCSS (Rsbuild's CSS pipeline auto-loads this). Replaces the
-// `@tailwindcss/vite` plugin used on Vite. `@source` directives in the CSS still
-// drive scanning (including `@betfin/ui`'s shipped dist).
+// The remote ships its own Tailwind output because the host never scans this
+// repository. Prefix every generated selector so those utilities and base rules
+// cannot override identically named host classes after the remote CSS is loaded.
 export default {
 	plugins: {
 		'@tailwindcss/postcss': {},
+		'postcss-prefix-selector': { prefix: '.tpl-scope' },
 	},
 };

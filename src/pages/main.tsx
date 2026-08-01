@@ -12,5 +12,9 @@ import { TemplateShell } from '@/components/template/shell';
 import '@/index.css';
 
 export default function Main() {
-	return <TemplateShell />;
+	return (
+		<div className="tpl-scope">
+			<TemplateShell />
+		</div>
+	);
 }

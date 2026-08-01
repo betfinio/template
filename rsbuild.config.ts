@@ -1,8 +1,8 @@
 import path from 'node:path';
+import { mfRemoteShareStrategy, mfShared } from '@betfin/sdk/mf';
 import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
-import { mfRemoteShareStrategy, mfShared } from '@betfin/sdk/mf';
 
 // The container name a host uses to reference this remote (`template/main`,
 // `template/i18n`). Keep it in sync with the `remotes` key in the host manifest.
@@ -40,11 +40,18 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
-			// `@wagmi/core/tempo` has an optional `import('accounts')` (a graceful-fail,
-			// turbopack-optional import). Vite/esbuild tolerate the unresolvable
-			// specifier; Rspack tries to resolve it and errors. That connector path is
-			// never invoked here (MockHost uses the injected connector), so stub it.
+			// MockHost uses only wagmi's injected connector. Rspack still discovers
+			// graceful-fail dynamic imports for every optional connector, so stub those
+			// unused packages instead of producing a warning for each one.
 			accounts: false,
+			'@base-org/account': false,
+			'@coinbase/wallet-sdk': false,
+			'@metamask/connect-evm': false,
+			porto: false,
+			'porto/internal': false,
+			'@safe-global/safe-apps-sdk': false,
+			'@safe-global/safe-apps-provider': false,
+			'@walletconnect/ethereum-provider': false,
 		},
 	},
 	// `class="dark"` on <html>, favicon, title live in index.html; Rsbuild injects

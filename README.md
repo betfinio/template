@@ -5,7 +5,7 @@ A **standalone [Module Federation](https://module-federation.io/) remote** templ
 Built to match the Betfin host contract, but it depends on **public npm packages only** — no private workspace packages — so anyone can clone, build, and deploy it.
 
 ```
-Vite 8  ·  React 19  ·  Module Federation (@module-federation/vite)  ·  wagmi 3  ·  @tanstack/react-query 5  ·  react-i18next 15  ·  Tailwind v4
+Rsbuild 2  ·  React 19  ·  Module Federation 2  ·  wagmi 3  ·  @tanstack/react-query 5  ·  react-i18next 15  ·  Tailwind v4
 ```
 
 ## Quick start
@@ -42,27 +42,26 @@ The build (`bun run build`) emits `dist/mf-manifest.json`, the entry a host regi
 
 Either way the page reads whatever providers sit above it. That works because the providers are **shared singletons**.
 
-### Shared singletons (`mf.shared.ts`)
+### Shared singletons (`@betfin/sdk/mf`)
 
-For the page to read the host's state, a handful of packages must resolve to a **single runtime instance** across both apps: `react`, `react-dom`, `@tanstack/react-query`, and `react-i18next`. The host declares the same set; MF negotiates one copy so `useTranslation()` and the query layer behave correctly across the boundary.
+For the page to read the host's state, a handful of packages must resolve to a **single runtime instance** across both apps: `react`, `react-dom`, `@betfin/sdk`, `@tanstack/react-query`, and `react-i18next`. The host declares the same set; MF negotiates one copy so wallet state, `useTranslation()`, and the query layer behave correctly across the boundary.
 
 Two subtleties this template already handles:
 
-- **`requiredVersion` floors.** MF infers a singleton's required version from *this repo's installed* version as `^<installed>`. A separate repo has its own lockfile, so it can install a newer **patch** than the host — MF would then reject the host's older singleton and fall back to *this* remote's copy (duplicate instance). `mf.shared.ts` pins each singleton to a permissive **major floor** (`^19.0.0`, `^5.0.0`) so the remote accepts whatever compatible version the host provides.
+- **`requiredVersion` floors.** MF normally infers a singleton's required version from *this repo's installed* version as `^<installed>`. A separate repo has its own lockfile, so it can install a newer **patch** than the host — MF could then reject the host's older singleton and fall back to *this* remote's copy (duplicate instance). The public `@betfin/sdk/mf` export pins each singleton to a permissive **major floor** (`^19.0.0`, `^5.0.0`) so the remote accepts whatever compatible version the host provides.
 - **`shareStrategy: 'loaded-first'`** (not `version-first`). The strategy is applied per-remote. `version-first` makes the remote pick the *highest* version in scope — its own newer copy — instead of the host's. `loaded-first` deterministically resolves to the version the host has **already loaded**, which is what a guest remote must do.
 
-### Wallet & host state — the important caveat
+### Wallet & host state
 
-You might expect to read the host's connected wallet by calling `useAccount()` from the shared `wagmi` singleton. **On a Privy-style host this does not work**, and `wagmi` is intentionally left out of `mf.shared.ts`:
+`@betfin/sdk` is the public wallet bridge. The host maps its real Privy/wagmi
+session into the SDK's plain `WalletState` and provides it once. Because the SDK
+is a shared `loaded-first` singleton, this remote's `useWallet()` reads that exact
+host value without importing the host's private wallet package. In standalone
+mode, `<MockHost>` provides the same contract using an injected browser wallet.
 
-> A host mounts its `WagmiProvider` inside its **own** wallet package (wagmi + Privy), so the provider is bound to *that* wagmi instance — not to the bare shared `wagmi` singleton a remote would receive. A remote calling `useAccount()` against shared wagmi finds no provider → `WagmiProviderNotFoundError`.
-
-The host's own remotes avoid this by reading the wallet through the host's **shared wallet package** (their hooks run inside the host's module, where the provider lives). For an app to read the host's wallet, pick one:
-
-1. **Consume the host's wallet package as a shared singleton** — the zero-friction path if your app can depend on it (i.e. it's an in-repo remote, not this fully-independent template).
-2. **Have the host expose a public wallet bridge** — a small exposed module or a public shared package (e.g. `./wallet-state`) that returns `{ address, isConnected, connect() }`. This is the clean way to give *independent* remotes wallet access without leaking the host's private stack.
-
-Until one of those exists, keep wallet-dependent UI out of the exposed surface (as this template does) — everything else federates fine.
+`wagmi` itself is intentionally not shared: the remote uses its own copy only for
+standalone wallet development and performs federated read-only chain calls with
+`viem`.
 
 ### Styling under federation
 
@@ -70,7 +69,12 @@ This is the one non-obvious part. The host's Tailwind build scans *its own* sour
 
 - `src/index.css` does `@import "tailwindcss"` + `@source "."` (scan this repo's source).
 - It's imported from **`src/pages/main.tsx`** (the exposed module), not only from the standalone entry — so the utilities travel with the federated chunk.
-- Theme tokens are scoped under **`.tpl-root`** (the shell's wrapper element), not `:root`, so federating never overwrites the host's own CSS variables.
+- The PostCSS build prefixes every emitted selector with **`.tpl-scope`**. This
+  includes Tailwind utilities, preflight rules, and design tokens, so loading the
+  remote cannot override identically named host utilities or `:root` variables.
+- `src/pages/main.tsx` owns the `.tpl-scope` boundary. Keep all remote UI inside
+  it; if you add a portaled component, configure its portal container inside that
+  boundary too.
 
 ## Integrate into a host
 
@@ -90,17 +94,17 @@ Merge `manifest.example.json` into the host's whitelabel manifest:
 
 The host fetches this JSON at boot, registers the remote's `mf-manifest.json`, and mounts `/template`. No host redeploy.
 
-**Host requirements:** it must share the same singletons (`mf.shared.ts`) with `shareStrategy: 'loaded-first'` and register remotes from the manifest via `@module-federation/runtime`.
+**Host requirements:** its public singleton entries must match `@betfin/sdk/mf`, it must use `shareStrategy: 'loaded-first'`, and it must register remotes from the manifest via `@module-federation/runtime`.
 
 ## Add another page
 
 1. Create `src/pages/rewards.tsx` (default-exported, provider-free).
-2. Add it to `exposes` in `vite.config.ts`: `'./rewards': './src/pages/rewards.tsx'`.
+2. Add it to `exposes` in `rsbuild.config.ts`: `'./rewards': './src/pages/rewards.tsx'`.
 3. Add a route to the host manifest: `{ "path": "/template/rewards", "remote": "template", "module": "./rewards", "i18n": "./i18n" }`.
 
 ## Rename the remote
 
-The name `template` appears in: `vite.config.ts` (`REMOTE_NAME`), `manifest.example.json`, the i18n namespace (`src/i18n.ts` + `src/i18next.d.ts` + `translations/*/template.json`), and the `.tpl-root` class (`src/index.css` + `src/components/template/shell.tsx`). Update all five and you're done.
+The name `template` appears in: `rsbuild.config.ts` (`REMOTE_NAME`), `manifest.example.json`, and the i18n namespace (`src/i18n.ts` + `src/i18next.d.ts` + `translations/*/template.json`). Update those together.
 
 ## Deploy
 
@@ -112,8 +116,8 @@ Any static host works, as long as `mf-manifest.json`, `remoteEntry.js`, and `ass
 ## Project structure
 
 ```
-vite.config.ts        federation() exposes + shared config
-mf.shared.ts          the shared-singleton contract (must match the host)
+rsbuild.config.ts     federation exposes + the SDK shared config
+postcss.config.mjs    Tailwind processing + `.tpl-scope` CSS isolation
 manifest.example.json host manifest fragment to register this remote
 scripts/serve.ts      static server with CORS + cache headers for the remote
 src/
